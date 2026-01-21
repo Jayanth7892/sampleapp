@@ -139,7 +139,7 @@
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
 
-      const res = await fetch("http://localhost:5000/login", {
+      const res = await fetch("https://app-1-dgc8.onrender.com/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password })
@@ -165,7 +165,7 @@
       const username = document.getElementById('regUsername').value;
       const password = document.getElementById('regPassword').value;
 
-      const res = await fetch("http://localhost:5000/register", {
+      const res = await fetch("https://app-1-dgc8.onrender.com/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password })
@@ -189,3 +189,4 @@
 </body>
 
 </html>
+
