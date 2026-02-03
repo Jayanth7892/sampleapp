@@ -10,71 +10,79 @@
   <title>User Authentication</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
+      margin: 0;
     }
     .auth-container {
       background: #fff;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      width: 340px;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      width: 360px;
       text-align: center;
     }
     .auth-container img {
-      width: 120px;
-      margin-bottom: 15px;
+      width: 100px;
+      margin-bottom: 20px;
     }
     .auth-container h2 {
-      margin: 15px 0;
+      margin-bottom: 20px;
+      color: #1c1e21;
     }
     .auth-container input {
       width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #dddfe2;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 16px;
     }
     .auth-container button {
       width: 100%;
-      padding: 10px;
-      background: #007BFF;
+      padding: 12px;
+      background: #1877f2;
       color: #fff;
       border: none;
-      border-radius: 4px;
+      border-radius: 6px;
+      font-size: 18px;
+      font-weight: bold;
       cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.2s;
     }
     .auth-container button:hover {
-      background: #0056b3;
+      background: #166fe5;
     }
     .links {
-      margin-top: 10px;
+      margin-top: 20px;
     }
     .links a {
       display: block;
-      margin: 5px 0;
-      color: #007BFF;
+      margin: 8px 0;
+      color: #1877f2;
       text-decoration: none;
+      font-size: 14px;
     }
     .links a:hover {
       text-decoration: underline;
     }
     .message {
-      margin-top: 10px;
-      font-weight: bold;
+      margin-top: 15px;
+      font-size: 14px;
+      min-height: 20px;
     }
   </style>
 </head>
 <body>
   <div class="auth-container">
-    <!-- Logo -->
     <img src="logo.jpg" alt="Institution Logo">
 
-    <!-- Login Section (default visible) -->
     <div id="loginSection">
       <h2>Login</h2>
       <form id="loginForm">
@@ -90,7 +98,6 @@
       </div>
     </div>
 
-    <!-- Register Section (hidden initially) -->
     <div id="registerSection" style="display:none;">
       <h2>Register</h2>
       <form id="registerForm">
@@ -106,31 +113,24 @@
   </div>
 
   <script>
-    // Sections
     const loginSection = document.getElementById('loginSection');
     const registerSection = document.getElementById('registerSection');
+    const API_URL = "https://app-1-dgc8.onrender.com";
 
-    // Toggle to Register
+    // Toggle Navigation
     document.getElementById('showRegister').addEventListener('click', (e) => {
       e.preventDefault();
       loginSection.style.display = "none";
       registerSection.style.display = "block";
     });
 
-    // Toggle back to Login
     document.getElementById('backToLogin').addEventListener('click', (e) => {
       e.preventDefault();
       registerSection.style.display = "none";
       loginSection.style.display = "block";
     });
 
-    // Forgot password placeholder
-    document.getElementById('forgotPassword').addEventListener('click', (e) => {
-      e.preventDefault();
-      alert("Forgot password functionality not implemented yet.");
-    });
-
-    // Login form
+    // Login logic with Admin Redirect
     const loginForm = document.getElementById('loginForm');
     const loginMsg = document.getElementById('loginMsg');
 
@@ -139,24 +139,33 @@
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
 
-      const res = await fetch("https://app-1-dgc8.onrender.com/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
-      });
+      try {
+        const res = await fetch(`${API_URL}/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
+        });
 
-      const data = await res.json();
+        const data = await res.json();
 
-      if (data.msg.toLowerCase().includes("successful")) {
-        // ✅ Redirect to academic.html after successful login
-        window.location.href = "academic.html";
-      } else {
-        loginMsg.textContent = data.msg;
+        if (res.ok && data.msg.toLowerCase().includes("successful")) {
+          // ✅ NEW: Admin Routing Logic
+          if (username.toLowerCase() === "admin") {
+            window.location.href = "admin.html";
+          } else {
+            window.location.href = "academic.html";
+          }
+        } else {
+          loginMsg.textContent = data.msg || "Invalid credentials";
+          loginMsg.style.color = "red";
+        }
+      } catch (err) {
+        loginMsg.textContent = "Error connecting to server.";
         loginMsg.style.color = "red";
       }
     });
 
-    // Register form
+    // Register logic
     const registerForm = document.getElementById('registerForm');
     const registerMsg = document.getElementById('registerMsg');
 
@@ -165,29 +174,30 @@
       const username = document.getElementById('regUsername').value;
       const password = document.getElementById('regPassword').value;
 
-      const res = await fetch("https://app-1-dgc8.onrender.com/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
-      });
+      try {
+        const res = await fetch(`${API_URL}/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
+        });
 
-      const data = await res.json();
-      registerMsg.textContent = data.msg;
-      registerMsg.style.color = data.msg.includes("success") ? "green" : "red";
+        const data = await res.json();
+        registerMsg.textContent = data.msg;
+        registerMsg.style.color = res.ok ? "green" : "red";
 
-      // If registration successful, go back to login
-      if (data.msg.includes("success")) {
-        setTimeout(() => {
-          registerSection.style.display = "none";
-          loginSection.style.display = "block";
-          loginMsg.textContent = "Registration successful! Please log in.";
-          loginMsg.style.color = "green";
-        }, 1500);
+        if (res.ok) {
+          setTimeout(() => {
+            registerSection.style.display = "none";
+            loginSection.style.display = "block";
+            loginMsg.textContent = "Registration successful! Please log in.";
+            loginMsg.style.color = "green";
+          }, 1500);
+        }
+      } catch (err) {
+        registerMsg.textContent = "Error connecting to server.";
+        registerMsg.style.color = "red";
       }
     });
   </script>
 </body>
-
 </html>
-
-
