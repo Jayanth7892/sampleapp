@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Event Portal</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { display: flex; min-height: 100vh; background-color: #f4f7f6; }
+
+        /* Sidebar Styling */
+        .sidebar { width: 250px; background-color: #2c3e50; color: white; padding-top: 20px; flex-shrink: 0; }
+        .sidebar h2 { font-size: 1.2rem; padding: 15px 25px; border-bottom: 1px solid #34495e; margin-bottom: 10px; }
+        .nav-item { padding: 15px 25px; cursor: pointer; background-color: #34495e; border-left: 5px solid #1abc9c; }
+
+        /* Main Content Styling */
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+        .header-title { font-size: 24px; color: #333; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+        
+        /* Form Card Styling */
+        .form-card { background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 40px; }
+        .form-header { background-color: #17a2b8; color: white; padding: 12px 20px; font-weight: bold; }
+        .form-body { padding: 25px; }
+
+        /* Form Grouping */
+        .form-group { margin-bottom: 20px; display: flex; align-items: center; }
+        .form-group label { width: 180px; font-weight: 600; color: #555; }
+        .form-group input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        .form-group input:focus { outline: none; border-color: #17a2b8; box-shadow: 0 0 5px rgba(23, 162, 184, 0.2); }
+
+        /* Dynamic Container Styling */
+        #rollNoContainer { border-left: 3px solid #17a2b8; padding-left: 15px; margin-bottom: 20px; }
+        .dynamic-field { animation: fadeIn 0.3s ease-in; }
+
+        .submit-btn { background-color: #28a745; color: white; border: none; padding: 12px 30px; border-radius: 4px; cursor: pointer; float: right; font-size: 16px; transition: background 0.3s; }
+        .submit-btn:hover { background-color: #218838; }
+
+        /* Table Styling */
+        .table-card { background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; }
+        .table-header { background-color: #2c3e50; color: white; padding: 12px 20px; font-weight: bold; }
+        .table-container { padding: 20px; overflow-x: auto; }
+        
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        table th, table td { text-align: left; padding: 12px 15px; border-bottom: 1px solid #eee; }
+        table th { background-color: #f8f9fa; color: #333; font-weight: 600; font-size: 14px; }
+        table tr:hover { background-color: #f9f9f9; }
+
+        /* Status Badge */
+        .badge { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+        .badge-pending { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .badge-granted { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #successMsg { display: none; padding: 15px; margin-top: 15px; border-radius: 4px; background: #d4edda; color: #155724; clear: both; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>Dashboard</h2>
+        <div class="nav-item">Event</div>
+    </div>
+
+    <div class="main-content">
+        <h1 class="header-title">Student - Event Permission</h1>
+
+        <!-- Submission Form -->
+        <div class="form-card">
+            <div class="form-header">Upload Details</div>
+            <div class="form-body">
+                <form id="eventForm">
+                    <div class="form-group">
+                        <label for="participantCount">No. of Participants</label>
+                        <input type="number" id="participantCount" min="1" max="50" placeholder="Enter count" required>
+                    </div>
+
+                    <div id="rollNoContainer"></div>
+
+                    <div class="form-group">
+                        <label for="academicYear">Academic Year</label>
+                        <input type="text" id="academicYear" placeholder="e.g. 2024-2025" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventName">Event Name</label>
+                        <input type="text" id="eventName" placeholder="Enter Event Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="venue">Venue</label>
+                        <input type="text" id="venue" placeholder="Enter Venue Location" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="organiser">Organised By</label>
+                        <input type="text" id="organiser" placeholder="Dept/Club Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventDate">Event Date</label>
+                        <input type="date" id="eventDate" required>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">Submit Permission Request</button>
+                    <div id="successMsg">Submission successful! Details added to table.</div>
+                    <div style="clear: both;"></div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Submission Tracking Table -->
+        <div class="table-card">
+            <div class="table-header">Recent Submissions</div>
+            <div class="table-container">
+                <table id="submissionTable">
+                    <thead>
+                        <tr>
+                            <th>S.no</th>
+                            <th>Roll Number(s)</th>
+                            <th>Academic Year</th>
+                            <th>Event Name</th>
+                            <th>Venue</th>
+                            <th>Organised By</th>
+                            <th>Date</th>
+                            <th>Action (Status)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Rows will be added here -->
+                        <tr>
+                            <td colspan="8" style="text-align: center; color: #999;">No permissions requested yet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const participantInput = document.getElementById('participantCount');
+        const rollNoContainer = document.getElementById('rollNoContainer');
+        const eventForm = document.getElementById('eventForm');
+        const tableBody = document.getElementById('tableBody');
+        const successMsg = document.getElementById('successMsg');
+        
+        let submissionCount = 0;
+
+        // Dynamic Roll Number Generation
+        participantInput.addEventListener('input', function() {
+            const count = parseInt(this.value);
+            rollNoContainer.innerHTML = '';
+
+            if (isNaN(count) || count < 1) return;
+
+            for (let i = 1; i <= count; i++) {
+                const group = document.createElement('div');
+                group.className = 'form-group dynamic-field';
+                
+                const label = document.createElement('label');
+                label.textContent = `Roll No. ${i}`;
+                
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = `Roll Number for Student ${i}`;
+                input.className = 'participant-roll';
+                input.required = true;
+
+                group.appendChild(label);
+                group.appendChild(input);
+                rollNoContainer.appendChild(group);
+            }
+        });
+
+        // Form Submission Logic
+        eventForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Clear empty message if first submission
+            if (submissionCount === 0) {
+                tableBody.innerHTML = '';
+            }
+
+            submissionCount++;
+
+            // Collect Roll Numbers
+            const rollInputs = document.querySelectorAll('.participant-roll');
+            const rollNos = Array.from(rollInputs).map(input => input.value).join(', ');
+
+            // Get other form values
+            const year = document.getElementById('academicYear').value;
+            const eventName = document.getElementById('eventName').value;
+            const venue = document.getElementById('venue').value;
+            const organiser = document.getElementById('organiser').value;
+            const date = document.getElementById('eventDate').value;
+
+            // Create new row
+            const newRow = document.createElement('tr');
+            newRow.className = 'dynamic-field';
+            newRow.innerHTML = `
+                <td>${submissionCount}</td>
+                <td style="word-break: break-word; max-width: 200px;">${rollNos}</td>
+                <td>${year}</td>
+                <td>${eventName}</td>
+                <td>${venue}</td>
+                <td>${organiser}</td>
+                <td>${date}</td>
+                <td><span class="badge badge-pending">Pending</span></td>
+            `;
+
+            // Append to table
+            tableBody.appendChild(newRow);
+
+            // UI Feedback
+            successMsg.style.display = 'block';
+            eventForm.reset();
+            rollNoContainer.innerHTML = '';
+            
+            setTimeout(() => {
+                successMsg.style.display = 'none';
+            }, 3000);
+        });
+    </script>
+
+</body>
+</html>
