@@ -1,235 +1,585 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Portal | Event Permission</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; }
-        
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
         :root {
             --sidebar-width: 250px;
             --primary-color: #17a2b8;
             --secondary-color: #2c3e50;
             --success-color: #28a745;
             --bg-color: #f4f7f6;
-            --card-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --accent-color: #1abc9c;
         }
 
-        body { 
-            display: flex; 
-            min-height: 100vh; 
-            background-color: var(--bg-color); 
+        body {
+            display: flex;
+            min-height: 100vh;
+            background-color: var(--bg-color);
             color: #333;
         }
 
-        /* Sidebar Styling */
-        .sidebar { 
-            width: var(--sidebar-width); 
-            background-color: var(--secondary-color); 
-            color: white; 
-            padding-top: 20px; 
-            flex-shrink: 0; 
+        /* Sidebar Styling (Desktop) */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--secondary-color);
+            color: white;
+            padding-top: 20px;
+            flex-shrink: 0;
             transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
             z-index: 1000;
         }
 
-        .sidebar h2 { font-size: 1.1rem; padding: 15px 25px; border-bottom: 1px solid #34495e; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
-        .nav-item { padding: 15px 25px; cursor: pointer; background-color: #34495e; border-left: 5px solid #1abc9c; display: flex; align-items: center; gap: 10px; }
+        .sidebar h2 {
+            font-size: 1.1rem;
+            padding: 15px 25px;
+            border-bottom: 1px solid #34495e;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sidebar .nav-links {
+            flex: 1;
+            padding-top: 10px;
+        }
+
+        .nav-item {
+            padding: 15px 25px;
+            cursor: pointer;
+            background-color: #34495e;
+            border-left: 5px solid var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.2s;
+        }
+
+        .nav-item:hover {
+            background-color: #3e5871;
+        }
+
+        .logout-link {
+            padding: 15px 25px;
+            color: #94a3b8;
+            text-decoration: none;
+            border-top: 1px solid #34495e;
+            transition: 0.2s;
+        }
+
+        .logout-link:hover {
+            color: white;
+            background: #c0392b;
+        }
 
         /* Main Content */
-        .main-content { flex: 1; padding: 40px; width: 100%; transition: all 0.3s; }
-        .header-title { font-size: 26px; color: #1e293b; margin-bottom: 25px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; font-weight: 700; }
-        
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-title {
+            font-size: 26px;
+            color: #1e293b;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         /* Cards */
-        .card { background: white; border-radius: 12px; box-shadow: var(--card-shadow); margin-bottom: 30px; overflow: hidden; border: 1px solid #e2e8f0; }
-        .card-header { background-color: var(--primary-color); color: white; padding: 15px 20px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
-        .table-header { background-color: var(--secondary-color); }
-        .card-body { padding: 25px; }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-body {
+            padding: 25px;
+        }
 
         /* Form Styling */
-        .form-group { margin-bottom: 20px; display: flex; align-items: center; gap: 15px; }
-        .form-group label { width: 180px; font-weight: 600; color: #475569; font-size: 0.95rem; }
-        .form-group input { flex: 1; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; transition: border-color 0.2s; }
-        .form-group input:focus { outline: none; border-color: var(--primary-color); }
-
-        #rollNoContainer { border-left: 3px solid #e2e8f0; padding-left: 20px; margin-bottom: 10px; }
-
-        .submit-btn { 
-            background-color: #059669; color: white; border: none; padding: 12px 35px; 
-            border-radius: 8px; cursor: pointer; float: right; font-size: 16px; font-weight: 600;
-            transition: background 0.2s;
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
-        .submit-btn:hover { background-color: #047857; }
+
+        .form-group label {
+            width: 180px;
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.95rem;
+        }
+
+        .form-group input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
+        }
+
+        #rollNoContainer {
+            border-left: 3px solid var(--accent-color);
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        .submit-btn {
+            background-color: #059669;
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            float: right;
+            transition: 0.2s;
+            font-size: 1rem;
+        }
+
+        .submit-btn:hover {
+            background-color: #047857;
+            transform: translateY(-1px);
+        }
 
         /* Table Styling */
-        .table-container { padding: 0; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        th, td { text-align: left; padding: 15px 20px; border-bottom: 1px solid #f1f5f9; }
-        th { background-color: #f8fafc; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        /* Status Badges */
-        .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
-        .Pending { background: #fef3c7; color: #92400e; }
-        .Approved { background: #d1fae5; color: #065f46; }
-        .Rejected { background: #fee2e2; color: #991b1b; }
-
-        /* Mobile Layout Adjustments */
-        .menu-toggle { display: none; background: var(--secondary-color); color: white; border: none; padding: 10px 15px; cursor: pointer; position: fixed; top: 15px; left: 15px; z-index: 1100; border-radius: 6px; }
-
-        @media (max-width: 768px) {
-            body { flex-direction: column; }
-            .sidebar { position: fixed; left: -250px; height: 100%; width: 250px; box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
-            .sidebar.active { left: 0; }
-            .menu-toggle { display: block; }
-            .main-content { margin-top: 60px; padding: 20px; }
-            .form-group { flex-direction: column; align-items: flex-start; gap: 5px; }
-            .form-group label { width: 100%; }
-            .submit-btn { width: 100%; }
-            .header-title { font-size: 20px; }
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
         }
 
-        #successMsg { display: none; padding: 15px; margin-top: 15px; background: #dcfce7; color: #166534; border-radius: 8px; font-weight: 500; text-align: center; clear: both; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 15px 20px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .Pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .Approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .Rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .upload-input {
+            font-size: 11px;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .timer-msg {
+            font-size: 10px;
+            color: #dc3545;
+            display: block;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        /* Mobile specific elements */
+        .mobile-header {
+            display: none;
+        }
+
+        .mobile-nav {
+            display: none;
+        }
+
+        /* MOBILE OPTIMIZATION */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+                background-color: #fff;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .mobile-header {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 15px;
+                background: var(--secondary-color);
+                color: white;
+                position: sticky;
+                top: 0;
+                z-index: 1001;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+
+            .main-content {
+                padding: 20px;
+                padding-bottom: 100px;
+            }
+
+            .header-title {
+                font-size: 20px;
+                justify-content: center;
+            }
+
+            .card {
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+                border-radius: 15px;
+            }
+
+            .form-group {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .form-group label {
+                width: 100%;
+            }
+
+            .submit-btn {
+                width: 100%;
+                margin-top: 10px;
+            }
+
+            /* Mobile Bottom Nav Bar */
+            .mobile-nav {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: white;
+                height: 70px;
+                border-top: 1px solid #e2e8f0;
+                justify-content: space-around;
+                align-items: center;
+                z-index: 1000;
+                box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.05);
+            }
+
+            .mobile-nav-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                color: #64748b;
+                text-decoration: none;
+                font-size: 12px;
+                gap: 5px;
+            }
+
+            .mobile-nav-item.active {
+                color: var(--primary-color);
+                font-weight: 600;
+            }
+
+            .mobile-nav-item i {
+                font-size: 20px;
+            }
+
+            .mobile-nav-item.logout:hover {
+                color: #e74c3c;
+            }
+        }
+
+        #successMsg {
+            display: none;
+            padding: 15px;
+            margin-top: 15px;
+            background: #dcfce7;
+            color: #166534;
+            border-radius: 8px;
+            font-weight: 500;
+            text-align: center;
+            clear: both;
+        }
     </style>
 </head>
+
 <body>
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <i class="fas fa-graduation-cap" style="margin-right: 10px;"></i>
+        <h2 style="font-size: 1.1rem; letter-spacing: 1px;">STUDENT PORTAL</h2>
+    </div>
 
-    <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')">
-        <i class="fas fa-bars"></i> Menu
-    </button>
-
+    <!-- Sidebar (Desktop) -->
     <div class="sidebar">
         <h2>Student Portal</h2>
-        <div class="nav-item"><i class="fas fa-calendar-check"></i> Event Permission</div>
-        <a href="index.html" style="display: block; padding: 15px 25px; color: #94a3b8; text-decoration: none; margin-top: auto;">
+        <div class="nav-links">
+            <div class="nav-item"><i class="fas fa-calendar-check"></i> Event Permission</div>
+        </div>
+        <a href="index.html" onclick="localStorage.clear()" class="logout-link">
             <i class="fas fa-sign-out-alt"></i> Logout
         </a>
     </div>
 
+    <!-- Main Content -->
     <div class="main-content">
-        <h1 class="header-title">Student Event Permission Portal</h1>
+        <h1 class="header-title"><i class="fas fa-file-signature"></i>Student Event Permission Portal</h1>
 
+        <!-- Form Card -->
         <div class="card">
             <div class="card-header"><i class="fas fa-upload"></i> Submission Form</div>
             <div class="card-body">
                 <form id="eventForm">
                     <div class="form-group">
                         <label>Total Participants</label>
-                        <input type="number" id="participantCount" min="1" max="50" placeholder="Enter number" required>
+                        <input type="number" id="participantCount" min="1" required
+                            placeholder="Enter number of students">
                     </div>
-                    
+
                     <div id="rollNoContainer"></div>
 
                     <div class="form-group">
                         <label>Academic Year</label>
-                        <input type="text" id="academicYear" placeholder="e.g. 2024-2025" required>
+                        <input type="text" id="academicYear" placeholder="e.g., 2024-25" required>
                     </div>
                     <div class="form-group">
                         <label>Event Name</label>
-                        <input type="text" id="eventName" placeholder="Enter name of the event" required>
+                        <input type="text" id="eventName" placeholder="Name of the competition/event" required>
                     </div>
                     <div class="form-group">
                         <label>Venue</label>
-                        <input type="text" id="venue" placeholder="Enter location/hall" required>
+                        <input type="text" id="venue" placeholder="e.g., University Hall" required>
                     </div>
                     <div class="form-group">
                         <label>Organised By</label>
-                        <input type="text" id="organiser" placeholder="Department or Club name" required>
+                        <input type="text" id="organiser" placeholder="Dept / Institution / Club" required>
                     </div>
                     <div class="form-group">
                         <label>Event Date</label>
                         <input type="date" id="eventDate" required>
                     </div>
-                    
                     <button type="submit" class="submit-btn">Send for Approval</button>
-                    <div id="successMsg"><i class="fas fa-check-circle"></i> Request sent to Administrator successfully!</div>
+                    <div id="successMsg"><i class="fas fa-check-circle"></i> Request sent to Administrator successfully!
+                    </div>
                 </form>
             </div>
         </div>
 
+        <!-- History Card -->
         <div class="card">
-            <div class="card-header table-header"><i class="fas fa-history"></i> My Submission History</div>
+            <div class="card-header" style="background:#2c3e50;"><i class="fas fa-history"></i> My Submission History
+            </div>
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
                             <th>S.No</th>
-                            <th>Roll Number(s)</th>
-                            <th>Year</th>
+                            <th>Roll Numbers</th>
                             <th>Event Name</th>
-                            <th>Organiser</th>
-                            <th>Event Date</th>
+                            <th>Organised By</th>
+                            <th>Date</th>
                             <th>Status</th>
+                            <th>Evidence Upload</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
-                        <tr><td colspan="7" style="text-align:center; padding: 30px; color: #64748b;">Loading your records...</td></tr>
+                        <tr>
+                            <td colspan="7" style="text-align:center; padding: 30px; color: #64748b;">Loading your
+                                records...</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
+    <!-- Mobile Navigation Bar -->
+    <div class="mobile-nav">
+        <a href="#" class="mobile-nav-item active"><i class="fas fa-home"></i>Apply</a>
+        <a href="#" class="mobile-nav-item"
+            onclick="document.querySelector('.main-content').scrollBy({top: 800, behavior: 'smooth'})"><i
+                class="fas fa-history"></i>History</a>
+        <a href="index.html" onclick="localStorage.clear()" class="mobile-nav-item logout"><i
+                class="fas fa-sign-out-alt"></i>Logout</a>
+    </div>
+
     <script>
         const API_BASE = "https://app-1-dgc8.onrender.com";
+        const currentUser = localStorage.getItem('currentUser');
+        if (!currentUser) window.location.href = "index.html";
 
-        // Load History from DB
         async function loadEvents() {
             try {
-                const res = await fetch(`${API_BASE}/get-events`);
+                // Fetch events for the current student
+                const res = await fetch(`${API_BASE}/get-events?user=${currentUser}`);
                 const events = await res.json();
                 const tableBody = document.getElementById('tableBody');
                 tableBody.innerHTML = '';
 
                 if (events.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 30px;">No requests found. Start by submitting the form above.</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 40px; color: #94a3b8;">No requests found yet.</td></tr>';
                     return;
                 }
 
                 events.forEach((ev, i) => {
-                    const row = `<tr>
+                    const evDate = new Date(ev.eventDate);
+                    const now = new Date();
+
+                    // Logic: Same day AND 9 AM (9) to 5 PM (17)
+                    const isToday = now.toDateString() === evDate.toDateString();
+                    const isTimeWindow = now.getHours() >= 9 && now.getHours() < 17;
+                    const canUpload = ev.status === 'Approved' && isToday && isTimeWindow;
+
+                    let uploadAction = "---";
+                    const photoCount = ev.eventPhotos ? ev.eventPhotos.length : 0;
+                    const countMsg = photoCount > 0 ? `<br><small style="color:#059669">${photoCount} photo(s) uploaded</small>` : "";
+
+                    if (ev.status === 'Approved') {
+                        if (canUpload) {
+                            uploadAction = `<input type="file" multiple onchange="handleUpload(this, '${ev._id}')" class="upload-input">${countMsg}`;
+                        } else if (isToday && !isTimeWindow) {
+                            uploadAction = `<span class="timer-msg">WINDOW CLOSED (9AM-5PM)</span>${countMsg}`;
+                        } else if (now < evDate) {
+                            uploadAction = `<span class="timer-msg" style="color:#666">OPENS ON ${evDate.toLocaleDateString()}</span>${countMsg}`;
+                        } else {
+                            uploadAction = `<span class="timer-msg">EXPIRED</span>${countMsg}`;
+                        }
+                    }
+
+                    tableBody.innerHTML += `<tr>
                         <td>${i + 1}</td>
-                        <td style="font-weight: 500; font-family: monospace;">${ev.rollNumbers.join(', ')}</td>
-                        <td>${ev.academicYear}</td>
-                        <td><strong>${ev.eventName}</strong></td>
+                        <td style="font-size:12px; color:#666; max-width: 200px; word-break: break-word;">${ev.rollNumbers.join(', ')}</td>
+                        <td><b>${ev.eventName}</b></td>
                         <td>${ev.organiser}</td>
-                        <td>${new Date(ev.eventDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                        <td>${evDate.toLocaleDateString()}</td>
                         <td><span class="status-badge ${ev.status}">${ev.status}</span></td>
+                        <td>${uploadAction}</td>
                     </tr>`;
-                    tableBody.innerHTML += row;
                 });
-            } catch (err) {
-                console.error("Load failed:", err);
-            }
+            } catch (err) { console.error("History load error:", err); }
         }
 
-        // Initialize on load
-        window.onload = loadEvents;
+        async function handleUpload(input, id) {
+            const files = Array.from(input.files);
+            if (files.length === 0) return;
 
-        // Dynamic Roll No Inputs
-        document.getElementById('participantCount').addEventListener('input', function() {
+            // Show loading hint
+            input.parentElement.innerHTML = `<span style="font-size:10px; color:var(--primary-color)">Uploading...</span>`;
+
+            const photos = await Promise.all(files.map(f => {
+                return new Promise(r => {
+                    const reader = new FileReader();
+                    reader.onload = e => r(e.target.result);
+                    reader.readAsDataURL(f);
+                });
+            }));
+
+            try {
+                const res = await fetch(`${API_BASE}/upload-photos/${id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ photos })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert("Photos successfully uploaded!");
+                    loadEvents();
+                } else {
+                    alert("Upload failed: " + data.msg); // Show server error (e.g. Window Closed)
+                    loadEvents();
+                }
+            } catch (err) { alert("Upload failed: Connection error"); loadEvents(); }
+        }
+
+        document.getElementById('participantCount').addEventListener('input', function () {
             const container = document.getElementById('rollNoContainer');
             container.innerHTML = '';
             const count = parseInt(this.value);
             if (isNaN(count) || count < 1) return;
 
             for (let i = 1; i <= count; i++) {
-                const div = document.createElement('div');
-                div.className = 'form-group';
-                div.innerHTML = `<label>Roll No. ${i}</label><input type="text" class="roll-input" placeholder="Enter Roll Number" required>`;
-                container.appendChild(div);
+                container.innerHTML += `
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label style="font-size: 0.85rem; width: 120px;">Roll No. ${i}</label>
+                        <input type="text" class="roll-input" placeholder="e.g., 22XX01" required>
+                    </div>`;
             }
         });
 
-        // Submit to Backend
-        document.getElementById('eventForm').addEventListener('submit', async function(e) {
+        document.getElementById('eventForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            const rolls = Array.from(document.querySelectorAll('.roll-input')).map(i => i.value);
-            
             const data = {
+                submittedBy: currentUser,
                 participantCount: document.getElementById('participantCount').value,
-                rollNumbers: rolls,
+                rollNumbers: Array.from(document.querySelectorAll('.roll-input')).map(i => i.value),
                 academicYear: document.getElementById('academicYear').value,
                 eventName: document.getElementById('eventName').value,
                 venue: document.getElementById('venue').value,
@@ -243,18 +593,18 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(data)
                 });
-
                 if (res.ok) {
                     document.getElementById('successMsg').style.display = 'block';
                     this.reset();
                     document.getElementById('rollNoContainer').innerHTML = '';
-                    loadEvents(); // Refresh the history list
-                    setTimeout(() => document.getElementById('successMsg').style.display = 'none', 4000);
+                    loadEvents();
+                    setTimeout(() => { document.getElementById('successMsg').style.display = 'none'; }, 4000);
                 }
-            } catch (err) { 
-                alert("Connection Error: Could not reach the server."); 
-            }
+            } catch (e) { alert("Error connecting to server."); }
         });
+
+        window.onload = loadEvents;
     </script>
 </body>
+
 </html>
