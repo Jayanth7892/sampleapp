@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -18,9 +17,7 @@
         :root {
             --sidebar-width: 260px;
             --primary-color: #2563eb;
-            /* Professional Blue */
             --secondary-color: #1e293b;
-            /* Dark Navy */
             --success-color: #059669;
             --danger-color: #dc2626;
             --warning-color: #d97706;
@@ -44,12 +41,16 @@
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
+            transition: left 0.3s ease;
         }
 
         .sidebar-header {
             padding: 0 25px 20px;
             border-bottom: 1px solid #334155;
             margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .sidebar-header h2 {
@@ -85,6 +86,23 @@
             flex: 1;
             padding: 40px;
             overflow-y: auto;
+        }
+
+        .mobile-header {
+            display: none;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .menu-toggle {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.2rem;
         }
 
         .top-bar {
@@ -178,20 +196,9 @@
             text-transform: uppercase;
         }
 
-        .Pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .Approved {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .Rejected {
-            background: #fee2e2;
-            color: #991b1b;
-        }
+        .Pending { background: #fef3c7; color: #92400e; }
+        .Approved { background: #d1fae5; color: #065f46; }
+        .Rejected { background: #fee2e2; color: #991b1b; }
 
         .details-grid {
             display: grid;
@@ -236,30 +243,28 @@
             transition: all 0.2s;
         }
 
-        .btn-approve {
-            background-color: var(--success-color);
-            color: white;
-        }
-
-        .btn-approve:hover {
-            background-color: #047857;
-        }
-
-        .btn-reject {
-            background-color: #f1f5f9;
-            color: #475569;
-            border: 1px solid #e2e8f0;
-        }
-
-        .btn-reject:hover {
-            background-color: #fee2e2;
-            color: #991b1b;
-        }
+        .btn-approve { background-color: var(--success-color); color: white; }
+        .btn-approve:hover { background-color: #047857; }
+        .btn-reject { background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        .btn-reject:hover { background-color: #fee2e2; color: #991b1b; }
 
         /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
-                display: none;
+                position: fixed;
+                left: -100%;
+                top: 0;
+                height: 100%;
+                z-index: 1000;
+                box-shadow: 10px 0 20px rgba(0,0,0,0.2);
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+
+            .mobile-header {
+                display: flex;
             }
 
             .main-content {
@@ -268,6 +273,12 @@
 
             .details-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
             }
         }
 
@@ -288,7 +299,7 @@
             margin: 5% auto;
             padding: 20px;
             border: 1px solid #888;
-            width: 80%;
+            width: 90%;
             max-width: 800px;
             border-radius: 8px;
             position: relative;
@@ -304,42 +315,21 @@
             cursor: pointer;
         }
 
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
         .gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 15px;
             margin-top: 20px;
-        }
-
-        .gallery img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .gallery img:hover {
-            transform: scale(1.02);
         }
     </style>
 </head>
 
 <body>
 
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h2>ADMIN PORTAL</h2>
-        </div>
+            </div>
         <a href="#" class="nav-item active">
             <i class="fas fa-tasks"></i>
             <span>Permission Requests</span>
@@ -351,6 +341,13 @@
     </div>
 
     <div class="main-content">
+        <div class="mobile-header">
+            <button class="menu-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <span style="font-weight: 700; color: var(--secondary-color);">Admin Panel</span>
+        </div>
+
         <div class="top-bar">
             <div class="header-title">
                 <h1>Review Submissions</h1>
@@ -359,8 +356,7 @@
 
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-icon" style="background: #eff6ff; color: #2563eb;"><i class="fas fa-file-alt"></i>
-                </div>
+                <div class="stat-icon" style="background: #eff6ff; color: #2563eb;"><i class="fas fa-file-alt"></i></div>
                 <div class="stat-info">
                     <h3 id="totalCount">0</h3>
                     <p>Total Requests</p>
@@ -380,7 +376,6 @@
         </div>
     </div>
 
-    <!-- Evidence Modal -->
     <div id="evidenceModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
@@ -391,6 +386,22 @@
 
     <script>
         const API_URL = "https://app-1-dgc8.onrender.com";
+
+        // Sidebar Toggle for Mobile
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.querySelector('.menu-toggle');
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
 
         // Modal Logic
         const modal = document.getElementById("evidenceModal");
@@ -411,25 +422,17 @@
                     } else {
                         files.forEach(f => {
                             const container = document.createElement("div");
-                            container.style.display = "flex";
-                            container.style.flexDirection = "column";
-                            container.style.alignItems = "center";
-                            container.style.gap = "5px";
-                            container.style.padding = "10px";
-                            container.style.border = "1px solid #eee";
-                            container.style.borderRadius = "8px";
+                            container.style = "display:flex; flex-direction:column; align-items:center; gap:5px; padding:10px; border:1px solid #eee; border-radius:8px;";
 
                             if (f.fileType && f.fileType.startsWith("image/")) {
                                 const img = document.createElement("img");
                                 img.src = f.data;
                                 img.onclick = () => window.open(f.data, '_blank');
-                                img.style.maxWidth = "150px";
-                                img.style.maxHeight = "150px";
-                                img.style.cursor = "pointer";
+                                img.style = "max-width:100%; height:120px; object-fit:cover; border-radius:4px; cursor:pointer;";
                                 container.appendChild(img);
                             } else {
                                 const icon = document.createElement("div");
-                                icon.innerHTML = '<i class="fas fa-file-pdf" style="font-size: 50px; color: #e74c3c;"></i>';
+                                icon.innerHTML = '<i class="fas fa-file-pdf" style="font-size: 40px; color: #e74c3c;"></i>';
                                 container.appendChild(icon);
                             }
 
@@ -437,11 +440,7 @@
                             link.href = f.data;
                             link.download = f.fileName || "evidence";
                             link.innerText = "Download ⬇";
-                            link.style.fontSize = "12px";
-                            link.style.color = "#2563eb";
-                            link.style.marginTop = "5px";
-                            link.style.fontWeight = "bold";
-                            link.style.textDecoration = "none";
+                            link.style = "font-size:12px; color:#2563eb; margin-top:5px; font-weight:bold; text-decoration:none;";
                             container.appendChild(link);
 
                             gallery.appendChild(container);
@@ -457,7 +456,6 @@
                 const events = await res.json();
                 const container = document.getElementById('requestContainer');
 
-                // Update Stats
                 document.getElementById('totalCount').innerText = events.length;
                 document.getElementById('pendingCount').innerText = events.filter(e => e.status === 'Pending').length;
 
@@ -489,7 +487,7 @@
                         ${ev.status === 'Pending' ? `
                             <div class="actions">
                                 <button class="btn btn-approve" onclick="updateStatus('${ev._id}', 'Approved')">
-                                    <i class="fas fa-check"></i> Approve Request
+                                    <i class="fas fa-check"></i> Approve
                                 </button>
                                 <button class="btn btn-reject" onclick="updateStatus('${ev._id}', 'Rejected')">
                                     <i class="fas fa-times"></i> Decline
@@ -499,7 +497,7 @@
                         ${ev.status === 'Approved' ? `
                             <div class="actions">
                                 <button class="btn btn-approve" style="background:#0f172a; flex:0 0 auto; width:auto; padding: 10px 20px;" onclick="viewEvidence('${ev._id}')">
-                                    <i class="fas fa-file-download"></i> View & Download Evidence
+                                    <i class="fas fa-file-download"></i> View Evidence
                                 </button>
                             </div>
                         ` : ''}
