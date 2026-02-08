@@ -366,6 +366,82 @@
             text-align: center;
             clear: both;
         }
+
+        /* Photo Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 8px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .gallery img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .gallery img:hover {
+            transform: scale(1.02);
+        }
+
+        .view-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-top: 5px;
+        }
+
+        .view-btn:hover {
+            background-color: #2980b9;
+        }
     </style>
 </head>
 
@@ -459,6 +535,15 @@
         </div>
     </div>
 
+    <!-- Photo Viewer Modal -->
+    <div id="photoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3>Event Photos</h3>
+            <div id="photoGallery" class="gallery"></div>
+        </div>
+    </div>
+
     <!-- Mobile Navigation Bar -->
     <div class="mobile-nav">
         <a href="#" class="mobile-nav-item active"><i class="fas fa-home"></i>Apply</a>
@@ -473,6 +558,65 @@
         const API_BASE = "https://app-1-dgc8.onrender.com";
         const currentUser = localStorage.getItem('currentUser');
         if (!currentUser) window.location.href = "index.html";
+
+        // Modal Logic
+        const modal = document.getElementById("photoModal");
+        function closeModal() { modal.style.display = "none"; }
+        window.onclick = function (event) { if (event.target == modal) closeModal(); }
+
+        function viewEvidence(eventId) {
+            const gallery = document.getElementById("photoGallery");
+            gallery.innerHTML = '<p style="text-align:center">Loading...</p>';
+            modal.style.display = "block";
+
+            fetch(`${API_BASE}/get-evidence/${eventId}`)
+                .then(res => res.json())
+                .then(files => {
+                    gallery.innerHTML = "";
+                    if (files.length === 0) {
+                        gallery.innerHTML = "<p>No evidence uploaded yet.</p>";
+                    } else {
+                        files.forEach(f => {
+                            const container = document.createElement("div");
+                            container.style.display = "flex";
+                            container.style.flexDirection = "column";
+                            container.style.alignItems = "center";
+                            container.style.gap = "5px";
+                            container.style.padding = "10px";
+                            container.style.border = "1px solid #eee";
+                            container.style.borderRadius = "8px";
+
+                            if (f.fileType && f.fileType.startsWith("image/")) {
+                                const img = document.createElement("img");
+                                img.src = f.data;
+                                img.onclick = () => window.open(f.data, '_blank');
+                                img.style.maxWidth = "150px";
+                                img.style.maxHeight = "150px";
+                                img.style.cursor = "pointer";
+                                container.appendChild(img);
+                            } else {
+                                // PDF or other file
+                                const icon = document.createElement("div");
+                                icon.innerHTML = '<i class="fas fa-file-pdf" style="font-size: 50px; color: #e74c3c;"></i>';
+                                container.appendChild(icon);
+                            }
+
+                            const link = document.createElement("a");
+                            link.href = f.data;
+                            link.download = f.fileName || "evidence";
+                            link.innerText = (f.fileName || "Download") + " ⬇";
+                            link.style.fontSize = "12px";
+                            link.style.color = "#2563eb";
+                            link.style.textDecoration = "none";
+                            link.style.marginTop = "5px";
+                            container.appendChild(link);
+
+                            gallery.appendChild(container);
+                        });
+                    }
+                })
+                .catch(() => gallery.innerHTML = "<p>Error loading evidence.</p>");
+        }
 
         async function loadEvents() {
             try {
@@ -497,18 +641,22 @@
                     const canUpload = ev.status === 'Approved' && isToday && isTimeWindow;
 
                     let uploadAction = "---";
-                    const photoCount = ev.eventPhotos ? ev.eventPhotos.length : 0;
-                    const countMsg = photoCount > 0 ? `<br><small style="color:#059669">${photoCount} photo(s) uploaded</small>` : "";
+
+                    // Button to view evidence (Always show if Approved)
+                    let viewBtn = "";
+                    if (ev.status === 'Approved') {
+                        viewBtn = `<br><button class="view-btn" onclick="viewEvidence('${ev._id}')"><i class="fas fa-eye"></i> View Evidence</button>`;
+                    }
 
                     if (ev.status === 'Approved') {
                         if (canUpload) {
-                            uploadAction = `<input type="file" multiple onchange="handleUpload(this, '${ev._id}')" class="upload-input">${countMsg}`;
+                            uploadAction = `<input type="file" multiple accept="image/*,application/pdf" onchange="handleUpload(this, '${ev._id}')" class="upload-input">${viewBtn}`;
                         } else if (isToday && !isTimeWindow) {
-                            uploadAction = `<span class="timer-msg">WINDOW CLOSED (9AM-5PM)</span>${countMsg}`;
+                            uploadAction = `<span class="timer-msg">WINDOW CLOSED (9AM-5PM)</span>${viewBtn}`;
                         } else if (now < evDate) {
-                            uploadAction = `<span class="timer-msg" style="color:#666">OPENS ON ${evDate.toLocaleDateString()}</span>${countMsg}`;
+                            uploadAction = `<span class="timer-msg" style="color:#666">OPENS ON ${evDate.toLocaleDateString()}</span>`;
                         } else {
-                            uploadAction = `<span class="timer-msg">EXPIRED</span>${countMsg}`;
+                            uploadAction = `<span class="timer-msg">EXPIRED</span>${viewBtn}`;
                         }
                     }
 
@@ -535,7 +683,11 @@
             const photos = await Promise.all(files.map(f => {
                 return new Promise(r => {
                     const reader = new FileReader();
-                    reader.onload = e => r(e.target.result);
+                    reader.onload = e => r({
+                        name: f.name,
+                        type: f.type,
+                        data: e.target.result
+                    });
                     reader.readAsDataURL(f);
                 });
             }));
