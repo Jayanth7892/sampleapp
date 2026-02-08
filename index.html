@@ -1,16 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <link rel="manifest" href="manifest.json">
-  <script src="/service-worker.js"></script>
 
-  <meta name="theme-color" content="#007BFF">
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Authentication</title>
+  <title>Login | Student Portal</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: sans-serif;
       background: #f0f2f5;
       display: flex;
       justify-content: center;
@@ -18,186 +15,105 @@
       height: 100vh;
       margin: 0;
     }
+
     .auth-container {
-      background: #fff;
+      background: white;
       padding: 40px;
       border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-      width: 360px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      width: 340px;
       text-align: center;
     }
-    .auth-container img {
-      width: 100px;
+
+    img {
+      width: 80px;
       margin-bottom: 20px;
     }
-    .auth-container h2 {
-      margin-bottom: 20px;
-      color: #1c1e21;
-    }
-    .auth-container input {
+
+    input {
       width: 100%;
       padding: 12px;
       margin: 10px 0;
-      border: 1px solid #dddfe2;
+      border: 1px solid #ddd;
       border-radius: 6px;
       box-sizing: border-box;
-      font-size: 16px;
     }
-    .auth-container button {
+
+    button {
       width: 100%;
       padding: 12px;
       background: #1877f2;
-      color: #fff;
+      color: white;
       border: none;
       border-radius: 6px;
-      font-size: 18px;
       font-weight: bold;
       cursor: pointer;
-      margin-top: 10px;
-      transition: background 0.2s;
     }
-    .auth-container button:hover {
-      background: #166fe5;
-    }
-    .links {
-      margin-top: 20px;
-    }
-    .links a {
-      display: block;
-      margin: 8px 0;
-      color: #1877f2;
-      text-decoration: none;
-      font-size: 14px;
-    }
-    .links a:hover {
-      text-decoration: underline;
-    }
+
     .message {
       margin-top: 15px;
       font-size: 14px;
-      min-height: 20px;
+    }
+
+    .toggle {
+      margin-top: 20px;
+      color: #1877f2;
+      cursor: pointer;
+      font-size: 14px;
     }
   </style>
 </head>
+
 <body>
   <div class="auth-container">
-    <img src="logo.jpg" alt="Institution Logo">
-
-    <div id="loginSection">
-      <h2>Login</h2>
-      <form id="loginForm">
-        <input type="text" id="username" placeholder="Username" required>
-        <input type="password" id="password" placeholder="Password" required>
-        <button type="submit">Login</button>
-      </form>
-      <div class="message" id="loginMsg"></div>
-
-      <div class="links">
-        <a href="#" id="forgotPassword">Forgot Password?</a>
-        <a href="#" id="showRegister">New Registration</a>
-      </div>
-    </div>
-
-    <div id="registerSection" style="display:none;">
-      <h2>Register</h2>
-      <form id="registerForm">
-        <input type="text" id="regUsername" placeholder="Username" required>
-        <input type="password" id="regPassword" placeholder="Password" required>
-        <button type="submit">Register</button>
-      </form>
-      <div class="message" id="registerMsg"></div>
-      <div class="links">
-        <a href="#" id="backToLogin">Back to Login</a>
-      </div>
-    </div>
+    <img src="logo.jpg" alt="Logo">
+    <h2 id="title">Login</h2>
+    <form id="authForm">
+      <input type="text" id="username" placeholder="Username" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <button type="submit" id="btn">Login</button>
+    </form>
+    <div id="msg" class="message"></div>
+    <p class="toggle" id="toggle">New Registration</p>
   </div>
 
   <script>
-    const loginSection = document.getElementById('loginSection');
-    const registerSection = document.getElementById('registerSection');
-    const API_URL = "https://app-1-dgc8.onrender.com";
+    let isLogin = true;
+    const API = "https://app-1-dgc8.onrender.com";
 
-    // Toggle Navigation
-    document.getElementById('showRegister').addEventListener('click', (e) => {
-      e.preventDefault();
-      loginSection.style.display = "none";
-      registerSection.style.display = "block";
+    document.getElementById('toggle').addEventListener('click', () => {
+      isLogin = !isLogin;
+      document.getElementById('title').innerText = isLogin ? "Login" : "Register";
+      document.getElementById('btn').innerText = isLogin ? "Login" : "Register";
     });
 
-    document.getElementById('backToLogin').addEventListener('click', (e) => {
-      e.preventDefault();
-      registerSection.style.display = "none";
-      loginSection.style.display = "block";
-    });
-
-    // Login logic with Admin Redirect
-    const loginForm = document.getElementById('loginForm');
-    const loginMsg = document.getElementById('loginMsg');
-
-    loginForm.addEventListener('submit', async (e) => {
+    document.getElementById('authForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
+      const path = isLogin ? "/login" : "/register";
 
-      try {
-        const res = await fetch(`${API_URL}/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password })
-        });
+      const res = await fetch(`${API}${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
 
-        const data = await res.json();
-
-        if (res.ok && data.msg.toLowerCase().includes("successful")) {
-          // ✅ NEW: Admin Routing Logic
-          if (username.toLowerCase() === "admin") {
-            window.location.href = "admin.html";
-          } else {
-            window.location.href = "academic.html";
-          }
+      const data = await res.json();
+      if (res.ok) {
+        if (isLogin) {
+          localStorage.setItem('currentUser', username); // FIX: Identity saved
+          window.location.href = username.toLowerCase() === "admin" ? "admin.html" : "academic.html";
         } else {
-          loginMsg.textContent = data.msg || "Invalid credentials";
-          loginMsg.style.color = "red";
+          alert("Success! Now Login.");
+          location.reload();
         }
-      } catch (err) {
-        loginMsg.textContent = "Error connecting to server.";
-        loginMsg.style.color = "red";
-      }
-    });
-
-    // Register logic
-    const registerForm = document.getElementById('registerForm');
-    const registerMsg = document.getElementById('registerMsg');
-
-    registerForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const username = document.getElementById('regUsername').value;
-      const password = document.getElementById('regPassword').value;
-
-      try {
-        const res = await fetch(`${API_URL}/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password })
-        });
-
-        const data = await res.json();
-        registerMsg.textContent = data.msg;
-        registerMsg.style.color = res.ok ? "green" : "red";
-
-        if (res.ok) {
-          setTimeout(() => {
-            registerSection.style.display = "none";
-            loginSection.style.display = "block";
-            loginMsg.textContent = "Registration successful! Please log in.";
-            loginMsg.style.color = "green";
-          }, 1500);
-        }
-      } catch (err) {
-        registerMsg.textContent = "Error connecting to server.";
-        registerMsg.style.color = "red";
+      } else {
+        document.getElementById('msg').innerText = data.msg;
+        document.getElementById('msg').style.color = "red";
       }
     });
   </script>
 </body>
+
 </html>
